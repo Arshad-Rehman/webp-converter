@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    
+        <title>Image Converter: JPG/PNG to WebP</title>
+      </head>
+<style>
+    .influ-block {
+        padding: 80px 0;
+    background-color: beige;
+    text-align: center;
+    margin-bottom: 70px;
+}
+.influ-block h1 {
+    font-size: 50px;
+}
+.influ-block-2{
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px 3px rgba(0,0,0,.1);
+    text-align: center;
+    padding: 42px 0 50px;
+    
+}
+.btn{
+    font-family: 'Work Sans',sans-serif;
+    background-color: #0b72a8;
+    font-weight: 500;
+    border-radius: 100px;
+    padding: 10px 22px 11px;
+    color: #fff;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+}
+.btm{
+    font-family: 'Work Sans',sans-serif;
+    background-color: #0b72a8;
+    font-weight: 500;
+    border-radius: 100px;
+    padding: 10px 22px 11px;
+    color: #fff;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+    margin-top: 20px;
+}
+.btn-block{
+    display: flex;
+    justify-content: space-evenly;
+    margin: 0 auto 100px;
+    flex-direction: column;
+}
+#output{
+    display: flex;
+    flex-direction: column;
+}
+#output a{
+    border-top: 1px solid #cecece;
+    list-style: none;
+    text-decoration: none;
+    color: black;
+    font-size: 20px;
+    padding: 15px;
+}
+@media only screen and (min-width:1200px) {
+.btn-block{
+    flex-direction: row;
+}
+.btm{
+    margin-top: 0px;
+}
+}
+</style>
+<body>
+    <section class="influ-block">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div>
+                        <h1>WebP converter </h1>
+                        <p>A free online tool to convert JPG and PNG files to WebP and WebP images</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="influ-block-2">
+                        <input type="file" id="fileInput" multiple>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+   <section class="pt-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="btn-block">
+                    <button onclick="convertImages()" class="btn">Convert to WebP</button>
+                    <button onclick="downloadAsZip()" class="btm">Download All as ZIP</button>
+                
+                </div>
+            </div>
+        </div>
+    </div>
+   </section>
+   <section>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="list">
+                    <div id="output"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+   </section>
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script>
+        const convertedImages = [];
+
+        function convertImages() {
+            const inputElement = document.getElementById('fileInput');
+            const files = inputElement.files;
+            const outputElement = document.getElementById('output');
+
+            outputElement.innerHTML = '';
+            convertedImages.length = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onloadend = function () {
+                    const image = new Image();
+                    image.src = reader.result;
+
+                    image.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        context.drawImage(image, 0, 0);
+
+                        const webpBlob = canvas.toDataURL('image/webp');
+
+                        const filenameWithHyphen = file.name
+                            .toLowerCase()
+                            .replace(/\.(jpg|jpeg|png)$/i, '')
+                            .replace(/ /g, '-') + '.webp';
+
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = webpBlob;
+                        downloadLink.download = filenameWithHyphen;
+                        downloadLink.innerText = `${downloadLink.download}`;
+                        outputElement.appendChild(downloadLink);
+
+                        convertedImages.push({
+                            name: downloadLink.download,
+                            blob: webpBlob
+                        });
+                    };
+                };
+
+                if (file) {
+                    if (file.type.match(/image\/(jpeg|png|jpg)/)) {
+                        reader.readAsDataURL(file);
+                    } else {
+                        alert(`Invalid file format: ${file.name}. Only JPG, PNG, and JPEG files are supported.`);
+                    }
+                }
+            }
+        }
+
+        function downloadAsZip() {
+            if (convertedImages.length === 0) {
+                alert('No converted images to download.');
+                return;
+            }
+
+            const zip = new JSZip();
+
+            convertedImages.forEach((image) => {
+                const filename = image.name;
+                const dataURI = image.blob.split(',')[1];
+                zip.file(filename, dataURI, { base64: true });
+            });
+
+            zip.generateAsync({ type: 'blob' }).then((blob) => {
+                saveAs(blob, 'converted_images.zip');
+            });
+        }
+    </script>
+
+</body>
+</html>
